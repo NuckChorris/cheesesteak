@@ -1,4 +1,24 @@
 ;(function () {
+	/* Lightweight EventEmitter implementation */
+	var EventEmitter = function () {}
+	EventEmitter.prototype._events = {}
+
+	EventEmitter.prototype.bind = function (evt, fn) {
+		this._events[evt] = this._events[evt] || []
+		this._events[evt].push(fn)
+	}
+	EventEmitter.prototype.unbind = function (evt, fn) {
+		if (evt in this._events === false) return
+		this._events[evt].splice(this._events[evt].indexOf(fn), 1)
+	}
+	EventEmitter.prototype.emit = function (evt, is_promise) {
+		if (evt in this._events === false) return
+
+		for (var i = 0, l = this._events[evt].length; i < l; i++) {
+			this._events[evt][i].apply(this, Array.prototype.slice.call(arguments, 1))
+		}
+	}
+
 	/* Copy the stuff from Array to FileList */
 	FileList.prototype.forEach = Array.prototype.forEach
 	FileList.prototype.every = Array.prototype.every
