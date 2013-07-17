@@ -59,4 +59,85 @@
 		window.URL.revokeObjectURL(url)
 	}
 
+	// b gets merged as defaults for a
+	var defaults = function (a, b) {
+		var out = {}
+		for (var key in b) {
+			out[key] = (a[key] === void 0) ? b[key] : a[key]
+		}
+		return out
+	}
+
+	var mixin = function (a, b) {
+		for (var key in b) {
+			a[key] = b[key]
+		}
+	};
+
+	var FileListUploader = function (url, files, opts) {
+		this.url = url
+		this.files = files
+
+		opts = opts || {}
+
+		this.opts = defaults(opts, {
+			'field': 'files[]',
+		   'method': 'POST'
+		})
+	}
+	FileListUploader.prototype = Object.create(EventEmitter.prototype)
+	FileListUploader.prototype.upload = function (cb) {
+		if (cb) this.bind('uploadcomplete', cb)
+
+		var opts = this.opts
+		var files = this.files
+		var events = this
+
+		var data = new FormData()
+		files.forEach(function (file) {
+			data.append(opts.field, file)
+		})
+
+		var xhr = new XMLHttpRequest()
+
+		xhr.open(opts.method, this.url, true)
+		xhr.upload.addEventListener('progress', function (e) {
+			console.log('PROGRESS')
+			if (e.lengthComputable) {
+				size = e.loaded
+				// We know the size of the files, the order they're in, and how
+				// much we've uploaded.  Based on this data, we can do some magic 
+				// to figure out which file we're on, and how much we've uploaded
+				// of that file.
+				// TODO: fix this math, it seems to have trouble
+				for (var i = 0, l = files.length; i < l; i++) {
+					console.log('---')
+					console.log('size=' + size)
+					files[i].uploadedSize = Math.min(size, files[i].size)
+					console.log(files[i].name + ': ' + files[i].size + '/' + files[i].uploadedSize);
+					size -= files[i].uploadedSize
+					console.log('size='+size)
+					if (size <= 0) {
+						files.current = files[i]
+						size = 0
+					}
+				}
+			}
+			events.emit('uploadprogress', e, files)
+		}, false)
+		xhr.upload.addEventListener('onloadstart', function (e) { events.emit('uploadstart', e) })
+		xhr.upload.addEventListener('load', function (e) {
+			events.emit('uploadcomplete', e)
+		})
+		xhr.addEventListener('load', function (e) {
+			events.emit('load', e, xhr.responseText)
+		})
+
+		xhr.send(data)
+		/* TODO: Add more event passthroughs, maybe abstract it into a helper? */
+	}
+
+	FileList.prototype.upload = function uploadFileList (url, opts) {
+		return new FileListUploader(url, this, opts)
+	}
 })()
