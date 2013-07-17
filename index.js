@@ -49,6 +49,16 @@
 	Object.defineProperty(FileList.prototype, "humanSize", humanSize)
 	Object.defineProperty(File.prototype, "humanSize", humanSize)
 
+	Object.defineProperty(FileList.prototype, "uploadedSize", {
+		get: function getUploadedSize () {
+			return this.map(function(item) {
+				return item.uploadedSize || 0
+			}).reduce(function (prev, curr) {
+				return prev + curr
+			})
+		}
+	})
+
 	/* Object URL stuff */
 	Object.defineProperty(File.prototype, "url", {
 		get: function getURL () {
@@ -102,36 +112,30 @@
 
 		xhr.open(opts.method, this.url, true)
 		xhr.upload.addEventListener('progress', function (e) {
-			console.log('PROGRESS')
 			if (e.lengthComputable) {
 				size = e.loaded
 				// We know the size of the files, the order they're in, and how
 				// much we've uploaded.  Based on this data, we can do some magic 
 				// to figure out which file we're on, and how much we've uploaded
 				// of that file.
-				// TODO: fix this math, it seems to have trouble
+				// TODO: This math has trouble on later uploads.  Leak somewhere
 				for (var i = 0, l = files.length; i < l; i++) {
-					console.log('---')
-					console.log('size=' + size)
 					files[i].uploadedSize = Math.min(size, files[i].size)
-					console.log(files[i].name + ': ' + files[i].size + '/' + files[i].uploadedSize);
 					size -= files[i].uploadedSize
-					console.log('size='+size)
 					if (size <= 0) {
+						console.log((i+1) + '/' + l + ': ' + files[i].name + ': ' + humanSize(files[i].uploadedSize) + '/' + humanSize(files[i].size));
 						files.current = files[i]
 						size = 0
+						break
 					}
 				}
 			}
 			events.emit('uploadprogress', e, files)
 		}, false)
-		xhr.upload.addEventListener('onloadstart', function (e) { events.emit('uploadstart', e) })
-		xhr.upload.addEventListener('load', function (e) {
-			events.emit('uploadcomplete', e)
-		})
-		xhr.addEventListener('load', function (e) {
-			events.emit('load', e, xhr.responseText)
-		})
+		xhr.upload.addEventListener('loadstart', function (e) { events.emit('uploadstart', e) })
+		xhr.upload.addEventListener('load', function (e) { events.emit('uploadcomplete', e) })
+		xhr.addEventListener('progress', function (e) { events.emit('progress', e) })
+		xhr.addEventListener('load', function (e) { events.emit('load', e, xhr.responseText) })
 
 		xhr.send(data)
 		/* TODO: Add more event passthroughs, maybe abstract it into a helper? */
