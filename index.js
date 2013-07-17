@@ -78,12 +78,6 @@
 		return out
 	}
 
-	var mixin = function (a, b) {
-		for (var key in b) {
-			a[key] = b[key]
-		}
-	};
-
 	var FileListUploader = function (url, files, opts) {
 		this.url = url
 		this.files = files
