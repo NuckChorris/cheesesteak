@@ -125,7 +125,6 @@
 				// much we've uploaded.  Based on this data, we can do some magic 
 				// to figure out which file we're on, and how much we've uploaded
 				// of that file.
-				// TODO: This math has trouble on later uploads.  Leak somewhere
 				for (var i = 0, l = files.length; i < l; i++) {
 					files[i].uploadedSize = Math.min(size, files[i].size)
 					size -= files[i].uploadedSize
