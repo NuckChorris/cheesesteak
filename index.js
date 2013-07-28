@@ -132,7 +132,6 @@
 					if (size <= 0) {
 						files.current = files[i]
 						size = 0
-						break
 					}
 				}
 			}
