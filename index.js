@@ -113,6 +113,11 @@
 		var xhr = new XMLHttpRequest()
 
 		xhr.open(opts.method, this.url, true)
+		xhr.upload.addEventListener('loadstart', function (e) {
+			for (var i = 0, l = files.length; i < l; i++) {
+				files[i].uploadedSize = 0
+			}
+		})
 		xhr.upload.addEventListener('progress', function (e) {
 			if (e.lengthComputable) {
 				size = e.loaded
