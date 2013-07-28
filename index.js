@@ -49,6 +49,14 @@
 	Object.defineProperty(FileList.prototype, "humanSize", humanSize)
 	Object.defineProperty(File.prototype, "humanSize", humanSize)
 
+	var percentUploaded = {
+		get: function percentUploaded () {
+			return this.uploadedSize / this.size
+		}
+	}
+	Object.defineProperty(FileList.prototype, "percentUploaded", percentUploaded)
+	Object.defineProperty(File.prototype, "percentUploaded", percentUploaded)
+
 	Object.defineProperty(FileList.prototype, "uploadedSize", {
 		get: function getUploadedSize () {
 			return this.map(function(item) {
