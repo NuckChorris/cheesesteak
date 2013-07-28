@@ -3,15 +3,15 @@
 	var EventEmitter = function () {}
 	EventEmitter.prototype._events = {}
 
-	EventEmitter.prototype.bind = function (evt, fn) {
+	EventEmitter.prototype.on = function (evt, fn) {
 		this._events[evt] = this._events[evt] || []
 		this._events[evt].push(fn)
 	}
-	EventEmitter.prototype.unbind = function (evt, fn) {
+	EventEmitter.prototype.off = function (evt, fn) {
 		if (evt in this._events === false) return
 		this._events[evt].splice(this._events[evt].indexOf(fn), 1)
 	}
-	EventEmitter.prototype.emit = function (evt, is_promise) {
+	EventEmitter.prototype.emit = function (evt) {
 		if (evt in this._events === false) return
 
 		for (var i = 0, l = this._events[evt].length; i < l; i++) {
@@ -91,7 +91,7 @@
 	}
 	FileListUploader.prototype = Object.create(EventEmitter.prototype)
 	FileListUploader.prototype.upload = function (cb) {
-		if (cb) this.bind('uploadcomplete', cb)
+		if (cb) this.on('uploadcomplete', cb)
 
 		var opts = this.opts
 		var files = this.files
