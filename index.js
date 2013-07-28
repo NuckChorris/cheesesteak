@@ -40,7 +40,7 @@
 
 	/* Utility to convert bytes into human units */
 	var humanSize = {
-		get: function humanSize (size) {
+		get: function humanSize () {
 			var units = ["B", "KiB", "MIB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"]
 			var e = Math.floor(Math.log(this.size) / Math.log(1024))
 			return (this.size / Math.pow(1024, e)).toFixed(2) + " " + units[e]
@@ -125,7 +125,6 @@
 					files[i].uploadedSize = Math.min(size, files[i].size)
 					size -= files[i].uploadedSize
 					if (size <= 0) {
-						console.log((i+1) + '/' + l + ': ' + files[i].name + ': ' + humanSize(files[i].uploadedSize) + '/' + humanSize(files[i].size));
 						files.current = files[i]
 						size = 0
 						break
